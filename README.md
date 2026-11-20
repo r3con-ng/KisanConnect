@@ -1,110 +1,67 @@
-# KisanConnect - Direct Farmer-to-Consumer Digital Marketplace
+# KisanConnect
 
-> BGI Hackathon 2026 | Problem Statement BT3P2
+KisanConnect is a MERN marketplace prototype connecting farmers directly with consumers. The current app uses React, Vite, Express, Mongoose, and MongoDB. It is designed for local development and uses synthetic sample data.
 
-A bilingual (English/Hindi) AgriTech marketplace prototype connecting farmers directly with consumers, eliminating middlemen and ensuring fair prices.
+## Requirements
 
-## Folder Structure
+- Node.js 18 or newer
+- Docker with Compose (recommended) or MongoDB running locally (`mongodb://127.0.0.1:27017/kisanconnect`)
 
-```
-KisanConnect/
-├── index.html          # Landing page
-├── login.html          # Mobile + OTP login
-├── farmer.html         # Farmer dashboard
-├── consumer.html       # Consumer marketplace
-├── admin.html          # Admin dashboard
-├── kyc.html            # Multi-step farmer verification
-├── tracking.html       # Order logistics tracking
-├── payment.html        # Payment methods
-├── css/
-│   └── style.css       # Main stylesheet
-├── js/
-│   ├── app.js          # Core: language, TTS, stars, trust utilities
-│   ├── auth.js          # Login/OTP logic
-│   ├── farmer.js       # Farmer dashboard with trust & ratings
-│   ├── consumer.js     # Consumer marketplace with reviews
-│   ├── admin.js        # Admin dashboard with verification workflow
-│   ├── kyc.js          # 5-step KYC verification logic
-│   ├── tracking.js     # Logistics tracking logic
-│   └── payment.js      # Payment flow logic
-├── data/
-│   ├── translations.js # Bilingual text strings
-│   └── demo.js         # Demo farmers, crops, reviews, orders
-├── assets/
-│   ├── svg/            # SVG illustrations
-│   └── images/         # Image assets
-└── README.md
-```
+## Run locally
 
-## Setup
+1. Copy `.env.example` to `.env` and update `JWT_SECRET` for your local environment.
+2. Start MongoDB with `docker compose up -d mongodb` (or start your local MongoDB service).
+3. Install dependencies with `npm install`.
+4. Add the sample marketplace data with `npm run seed`.
+5. Start the API and Vite frontend with `npm run dev`.
+6. Open `http://localhost:5173`.
 
-1. Open `index.html` in a modern browser (Chrome recommended for SpeechSynthesis)
-2. No server required - fully frontend prototype
-3. All data stored in localStorage
+The API listens on `http://localhost:5000`; Vite proxies `/api` requests to it. The health endpoint is `/api/health`.
 
-## Demo Accounts
+## GitHub Pages
 
-| Role    | Name  | Mobile       | OTP    |
-|---------|-------|--------------|--------|
-| Farmer  | Ram   | 9876543210   | 123456 |
-| Consumer| Shyam | 9999999999   | 123456 |
-| Admin   | -     | 8888888888   | 123456 |
+GitHub Pages hosts only the static React frontend. The Express API and MongoDB must be deployed separately.
 
-## Demo Farmers
+1. Deploy the API and MongoDB to a backend host, then confirm the API is reachable at `https://your-api-host/api/health`.
+2. In the GitHub repository, add the repository variable `VITE_API_BASE_URL` with the API origin only, for example `https://your-api-host` (no trailing slash and no `/api`). On the backend host, set `CLIENT_ORIGIN=https://r3con-ng.github.io` to allow the Pages site to call the API.
+3. In repository Settings → Pages, set the publishing source to **GitHub Actions**.
+4. Push the changes to `main` or run the **Deploy frontend to GitHub Pages** workflow manually.
 
-| Name           | Rating | Trust Score | Status   | Crops              |
-|----------------|--------|-------------|----------|--------------------|
-| Ram Kumar      | 4.8    | 95%         | Approved | Potato, Onion, Wheat |
-| Suresh Patel   | 4.5    | 88%         | Approved | Tomato, Rice       |
-| Mahesh Yadav   | 3.9    | 62%         | Pending  | Carrot, Soyabean   |
-| Gopal Verma    | -      | 25%         | Pending  | Pulses, Wheat      |
-| Lakshmi Devi   | -      | 20%         | Pending  | Soyabean, Pulses   |
-| Ravi Singh     | 2.1    | 15%         | Rejected | Wheat              |
+The Pages build intentionally stops if `VITE_API_BASE_URL` is missing, so the published app cannot silently point its API requests back at the static Pages host. The app uses hash-based routes for Pages refresh and deep-link support.
 
-## Features
+## Deploy the API
 
-### Core
-- **Bilingual UI**: Full English/Hindi toggle with persistent selection
-- **Voice Assistant**: Text-to-speech guidance in selected language
-- **Mobile + OTP Login**: Demo OTP = 123456
-- **Responsive Design**: Mobile-first with sidebar + bottom nav
+The root `render.yaml` describes the Express API as a Render web service. For this prototype, pair it with a MongoDB Atlas Free cluster. Atlas Free clusters are intended for small development workloads and have reduced features and resources. Render Free web services sleep after 15 minutes without incoming traffic, so the first request after idle can take about a minute.
 
-### Farmer Verification (5-Step KYC)
-1. Aadhaar number + OTP verification
-2. Kisan ID input + simulated fetch
-3. Land details (Khasra, Village, District, State)
-4. Document upload simulation (Aadhaar, Land Proof, Photo)
-5. Review & submit for admin verification
+1. Create an Atlas Free cluster in AWS Singapore if Atlas marks it as Free; otherwise choose an Atlas Free region near your users. The Render service is set to Singapore to keep the app and database close for this India-based prototype.
+2. Create a database user with a strong password and a database named `kisanconnect`.
+3. Add the Render web service from this repository using the Blueprint (`render.yaml`). It generates `JWT_SECRET` and sets the Pages origin for CORS.
+4. In the Render service's Connect → Outbound panel, copy its outbound IP ranges. Add those ranges to the Atlas project's IP access list, then enter the Atlas connection string as Render's `MONGODB_URI`. Avoid `0.0.0.0/0`; Atlas warns that it allows connections from anywhere.
+5. Once the service is live, confirm its `/api/health` response reports `"database":"connected"`.
+6. Add the Render service origin to GitHub Actions repository variable `VITE_API_BASE_URL`, then enable GitHub Pages with GitHub Actions as the source.
+7. To load synthetic sample accounts and produce into Atlas, set your local `.env` `MONGODB_URI` to the Atlas connection string and run `npm run seed` once.
 
-### Admin Verification Workflow
-- Pending / Approved / Rejected tabs
-- Farmer detail cards with Aadhaar, Kisan ID, Khasra
-- Document preview thumbnails
-- "Verify via MP Bhulekh Portal" with animated loader
-- Approve / Reject / Request Re-upload actions
-- Bhulekh cross-check note in UI
+## Demo accounts
 
-### Trust, Rating & Review System
-- 1-5 star ratings with animated interactive stars
-- Category ratings: Quality, Delivery, Packaging, Communication
-- Written reviews with helpful votes
-- Trust score progress bars (color-coded)
-- Farmer profile cards with rating, trust, delivery success, repeat customers
-- Marketplace sections: Top Rated, Most Trusted, Recently Verified
-- Review moderation in admin (spam alerts, reported reviews)
+Sign in with any listed mobile number and OTP `123456`.
 
-### Dashboards
-- **Farmer**: Trust score, rating display, reviews, verification timeline
-- **Consumer**: Browse, search, filter, cart, favorites, farmer profiles, write reviews
-- **Admin**: Analytics, verification workflow, review moderation, trust analytics charts
+| Role | Mobile |
+| --- | --- |
+| Farmer | `9876543210` |
+| Consumer | `9999999999` |
+| Admin | `8888888888` |
 
-### Payment & Tracking
-- UPI, Wallet, COD, Bank Transfer with success animation
-- 5-step animated order tracker with simulate button
+Other valid 10-digit numbers become consumer demo accounts.
 
-## Tech Stack
+## Included workflows
 
-- HTML5, CSS3, Vanilla JavaScript
-- localStorage for state persistence
-- Web Speech API for voice assistance
-- No frameworks, no backend
+- Consumer marketplace search and category filters, farmer profiles, favorites, cart, multi-farmer checkout, order tracking, reviews, and payment history
+- Farmer dashboard, produce listings, order status management, earnings, and sample KYC submission
+- Admin statistics, farmer verification decisions, order status review, review moderation, and dispute management
+- English/Hindi UI toggle and browser voice guidance
+
+## Demo limitations
+
+OTP `123456`, payment outcomes, KYC, document checklists, government price ranges, demand insights, and all seeded user and marketplace data are simulations. No SMS, payment gateway, government database, or document storage is connected. Use only synthetic identity values; never submit real Aadhaar numbers or documents. The “verified” state is an application review state in this prototype, not government verification.
+
+The original standalone HTML pages and scripts are retained as reference material. The active application is the React app under `src/`, with its API and models under `server/`.
