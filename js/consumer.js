@@ -280,7 +280,7 @@ const ConsumerApp = {
     if (crop) {
       const limits = getPurchaseLimits(crop);
       Cart.add({ ...crop, minPurchase: limits.min, maxPurchase: limits.max, qty: limits.min });
-      window.location.href = 'payment.html';
+      window.KCNavigate('payment');
     }
   },
 
@@ -375,11 +375,10 @@ const ConsumerApp = {
     `).join('');
   },
 
-  checkout() { window.location.href = 'payment.html'; },
+  checkout() { window.KCNavigate('payment'); },
 
-  logout() { Session.clear(); window.location.href = 'index.html'; }
+  logout() { Session.clear(); window.KCNavigate('home'); }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  ConsumerApp.init();
-});
+window.ConsumerApp = ConsumerApp;
+if (!window.__KC_REACT_RENDERER__) document.addEventListener('DOMContentLoaded', () => ConsumerApp.init());

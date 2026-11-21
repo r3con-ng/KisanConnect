@@ -195,6 +195,5 @@ const KYC = {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  KYC.init();
-});
+window.KYC = KYC;
+if (!window.__KC_REACT_RENDERER__) document.addEventListener('DOMContentLoaded', () => KYC.init());

@@ -348,9 +348,8 @@ const Admin = {
     document.querySelectorAll('.stat-cards').forEach(s => observer.observe(s));
   },
 
-  logout() { Session.clear(); window.location.href = 'index.html'; }
+  logout() { Session.clear(); window.KCNavigate('home'); }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  Admin.init();
-});
+window.Admin = Admin;
+if (!window.__KC_REACT_RENDERER__) document.addEventListener('DOMContentLoaded', () => Admin.init());

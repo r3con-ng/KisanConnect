@@ -1,122 +1,97 @@
 # KisanConnect
 
-**A farmer-to-consumer marketplace prototype for discovering local produce and buying directly from growers.**
+**A bilingual farmer-to-consumer marketplace prototype for the BGI Hackathon 2026 (BT3P2).**
 
-KisanConnect brings together a React frontend and an Express API backed by MongoDB. The demo includes consumer, farmer, and administrator workspaces, sample marketplace data, and English/Hindi interface text.
+KisanConnect helps farmers showcase produce directly to consumers. The prototype includes role-based demo flows, marketplace simulations, farmer verification, order tracking, and English/Hindi interface text.
 
 ## Features
 
-- Browse and search produce listings by category and farmer.
-- View farmer profiles, favorites, ratings, and reviews.
-- Add produce from multiple farmers to a cart and place demo orders.
-- Track order status and view simulated payment history.
-- Manage listings and orders from a farmer dashboard.
-- Review sample farmer-verification applications, reviews, and disputes from an administrator dashboard.
-- Switch between English and Hindi.
+- Consumer marketplace with search, categories, farmer profiles, favorites, cart, checkout, and order history.
+- Farmer dashboard for listings, incoming orders, earnings, price guidance, and verification status.
+- Five-step sample farmer verification flow with simulated Aadhaar/Kisan ID checks and document uploads.
+- Admin dashboard for sample verification decisions, order monitoring, dispute resolution, and review moderation.
+- Reviews with star ratings, trust scores, helpful votes, and farmer performance indicators.
+- Simulated UPI, wallet, cash-on-delivery, and bank-transfer payments.
+- Order tracking with a five-step delivery timeline.
+- English/Hindi toggle and browser text-to-speech guidance.
+- Responsive layouts with desktop sidebars and mobile navigation.
 
-## Technology
-
-- **Frontend:** React, Vite, React Router
-- **API:** Node.js, Express
-- **Database:** MongoDB, Mongoose
-- **Authentication:** demo OTP flow with signed JWT sessions
-- **Deployment:** GitHub Pages frontend workflow and Render API Blueprint
-
-## Run locally
+## Run the prototype
 
 ### Requirements
 
-- Node.js 20 or newer and npm
-- Docker Compose, or a MongoDB instance
+- Node.js 20 or newer
+- npm
 
-### Setup
+### Start locally
 
 ```bash
 git clone https://github.com/r3con-ng/KisanConnect.git
 cd KisanConnect
 npm ci
-cp .env.example .env
-docker compose up -d mongodb
-```
-
-Set a private local value for `JWT_SECRET` in `.env`. The default MongoDB URI connects to the local database started by Docker Compose. If you use another MongoDB instance, update `MONGODB_URI` accordingly.
-
-Load the synthetic demo records, then start the API and frontend:
-
-```bash
-npm run seed
 npm run dev
 ```
 
-Open the frontend at <http://localhost:5173>. The API listens at <http://localhost:5000>; Vite forwards `/api` requests to it. Check the database connection at <http://localhost:5000/api/health>.
+Open <http://localhost:5173>. The React app renders the original prototype flows and uses browser `localStorage` for demo sessions, cart, favorites, listings, and simulations. MongoDB is not required to run the frontend. Data saved in `localStorage` stays in that browser profile and is not shared across devices.
 
-The seed command only populates an empty database. If the database already contains users, it skips seeding.
-
-### Environment variables
-
-| Variable | Purpose | Example |
-| --- | --- | --- |
-| `MONGODB_URI` | MongoDB connection string | `mongodb://127.0.0.1:27017/kisanconnect` |
-| `JWT_SECRET` | Secret used to sign API sessions | Set a private random value |
-| `PORT` | API port; defaults to `5000` | `5000` |
-| `CLIENT_ORIGIN` | Comma-separated browser origins allowed by CORS | `http://localhost:5173` |
-
-Keep `.env` and production credentials out of version control. `.env.example` contains local development defaults only.
+To reset the local demo, clear this site's storage in your browser's developer tools.
 
 ## Demo accounts
 
-Use OTP `123456` with the sample mobile numbers below:
+Use OTP `123456` with one of the seeded mobile numbers:
 
 | Role | Mobile |
 | --- | --- |
-| Consumer | `9999999999` |
 | Farmer | `9876543210` |
-| Administrator | `8888888888` |
+| Consumer | `9999999999` |
+| Admin | `8888888888` |
 
-The seed data includes additional farmer accounts. Any other valid 10-digit number creates a consumer demo account.
+Other valid 10-digit numbers are assigned a consumer demo profile. The dataset and fixed OTP are for demonstration only.
 
-## API
+## Technology
 
-All API routes use the `/api` prefix. The health endpoint reports API and database status:
+- React and React Router
+- Tailwind CSS utilities with the original KisanConnect stylesheet
+- JavaScript and Vite
+- Browser `localStorage` for client-side demo state
 
-```http
-GET /api/health
-```
+## Deploy to GitHub Pages
 
-The API also provides demo login, product and farmer listings, favorites, checkout, order tracking, reviews, farmer verification, and administrator review tools.
-
-## Deployment
-
-### API and database
-
-The root [`render.yaml`](render.yaml) defines a Render web service. Create a MongoDB Atlas cluster and a database user with read/write access to the `kisanconnect` database, then create the Render Blueprint from this repository.
-
-Provide the Atlas connection string as the Render `MONGODB_URI` environment value. Configure the Atlas IP access list with the outbound IP ranges shown for the Render service. Avoid opening database access to all IP addresses. The Blueprint generates `JWT_SECRET` and sets `CLIENT_ORIGIN` for the GitHub Pages site.
-
-After deployment, check `https://<api-host>/api/health`. A healthy response includes `"database":"connected"`.
-
-### Frontend on GitHub Pages
-
-The [Pages workflow](.github/workflows/pages.yml) builds the React frontend and deploys it to GitHub Pages.
+The frontend is built and published by [`.github/workflows/pages.yml`](.github/workflows/pages.yml).
 
 1. In repository **Settings → Pages**, set the publishing source to **GitHub Actions**.
-2. Under **Settings → Secrets and variables → Actions → Variables**, add `VITE_API_BASE_URL` with the API origin, such as `https://your-api-host`. Use the origin only—do not add a trailing slash or `/api`.
-3. Push to `main`, or run **Deploy frontend to GitHub Pages** from the Actions tab.
+2. Push to the `main` branch, or run **Deploy frontend to GitHub Pages** from the Actions tab.
 
-The build uses the repository path for GitHub Pages and requires `VITE_API_BASE_URL` to be set. The frontend uses hash-based routing so in-app routes work when hosted under a repository path.
+The workflow builds the static frontend with the repository path configured for GitHub Pages. No API URL or database credentials are required for the local-first frontend.
 
-## Prototype scope
+## Optional API service
 
-Authentication uses a fixed demo OTP and does not send SMS. Payments are simulated. Farmer verification stores sample form fields and checklist status; it does not verify identities or store documents. Seeded profiles and marketplace activity are synthetic.
+The repository also contains an Express/Mongoose API under `server/` and a Render Blueprint in [`render.yaml`](render.yaml). This API is separate from the default localStorage prototype and is not required by the GitHub Pages frontend.
 
-This project is for demonstration and development, not production use. Do not enter real identity, payment, or personal information. A production deployment needs real authentication, payment processing, verification, rate limiting, and operational safeguards.
+To run the API locally with MongoDB, start the included database container, configure `.env` from `.env.example`, and run `npm run dev:api`:
+
+```bash
+cp .env.example .env
+docker compose up -d mongodb
+npm run dev:api
+```
+
+The API health endpoint is <http://localhost:5000/api/health>. Keep `.env` and production credentials out of version control.
+
+## Demo scope
+
+The OTP, identity checks, document uploads, payments, price guidance, demand insights, delivery progress, and seeded marketplace activity are simulations. No SMS, payment gateway, government database, or document storage is connected. Do not enter real identity, payment, or personal information. This prototype is not production authentication or verification.
 
 ## Project structure
 
 ```text
-src/                    React application
-server/                 Express API, Mongoose models, and demo seed script
+src/                    React application and route renderer
+src/legacy/             Original landing-page template
+css/                    Original responsive visual system
+js/                     Prototype interactions and simulations
+data/                    Demo records and English/Hindi translations
+server/                 Optional Express API and Mongoose models
 .github/workflows/       GitHub Pages deployment workflow
-render.yaml              Render API service definition
-docker-compose.yml       Local MongoDB service
+render.yaml              Optional Render API service definition
+docker-compose.yml       Local MongoDB service for the optional API
 ```

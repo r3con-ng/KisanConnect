@@ -4,9 +4,11 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k -n api,web -c green,cyan \"npm:dev:api\" \"npm:dev:web\"",
+    "predev": "node scripts/copy-legacy-assets.mjs",
+    "dev": "vite --host 0.0.0.0",
     "dev:api": "node --watch server/index.js",
     "dev:web": "vite --host 0.0.0.0",
+    "prebuild": "node scripts/copy-legacy-assets.mjs",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "seed": "node server/seed.js",
@@ -23,8 +25,10 @@
     "react-router-dom": "^6.28.1"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.2",
+    "tailwindcss": "^4.3.5",
     "vite": "^5.4.2"
   }
 }

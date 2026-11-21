@@ -326,10 +326,9 @@ const Farmer = {
 
   logout() {
     Session.clear();
-    window.location.href = 'index.html';
+    window.KCNavigate('home');
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  Farmer.init();
-});
+window.Farmer = Farmer;
+if (!window.__KC_REACT_RENDERER__) document.addEventListener('DOMContentLoaded', () => Farmer.init());

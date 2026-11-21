@@ -102,6 +102,5 @@ const Payment = {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  Payment.init();
-});
+window.Payment = Payment;
+if (!window.__KC_REACT_RENDERER__) document.addEventListener('DOMContentLoaded', () => Payment.init());

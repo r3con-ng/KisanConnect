@@ -242,3 +242,11 @@ const INDIAN_STATES = [
   "Odisha", "Punjab", "Rajasthan", "Tamil Nadu", "Telangana",
   "Uttar Pradesh", "West Bengal"
 ];
+
+// Expose the original demo fixtures to the React renderer as well as the legacy scripts.
+Object.assign(window, {
+  DEMO_ACCOUNTS, DEMO_OTP, DEMO_FARMERS, DEMO_CROPS, GOVT_PRICE_SOURCES,
+  DEMAND_PREDICTIONS, DEMO_REVIEWS, DEMO_ORDERS, DEMO_PAYMENTS,
+  DEMO_ADMIN_STATS, DEMO_VERIFICATION_QUEUE, TRACKING_STEPS, KYC_STEPS,
+  INDIAN_STATES,
+});

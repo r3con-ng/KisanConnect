@@ -6,7 +6,7 @@ const Auth = {
 
   init() {
     // Get role from URL params
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(window.__KC_REACT_RENDERER__ ? window.location.hash.split('?')[1] || '' : window.location.search);
     this.role = params.get('role') || '';
 
     // Pre-fill if returning
@@ -87,20 +87,19 @@ const Auth = {
   redirectByRole(role) {
     switch (role) {
       case 'farmer':
-        window.location.href = 'farmer.html';
+        window.KCNavigate('farmer');
         break;
       case 'consumer':
-        window.location.href = 'consumer.html';
+        window.KCNavigate('consumer');
         break;
       case 'admin':
-        window.location.href = 'admin.html';
+        window.KCNavigate('admin');
         break;
       default:
-        window.location.href = 'index.html';
+        window.KCNavigate('home');
     }
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  Auth.init();
-});
+window.Auth = Auth;
+if (!window.__KC_REACT_RENDERER__) document.addEventListener('DOMContentLoaded', () => Auth.init());

@@ -5,7 +5,7 @@ const Tracking = {
 
   init() {
     // Check URL for order ID
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(window.__KC_REACT_RENDERER__ ? window.location.hash.split('?')[1] || '' : window.location.search);
     const orderId = params.get('order') || 'ORD002';
     document.getElementById('trackingOrderId').textContent = orderId;
 
@@ -70,6 +70,5 @@ const Tracking = {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  Tracking.init();
-});
+window.Tracking = Tracking;
+if (!window.__KC_REACT_RENDERER__) document.addEventListener('DOMContentLoaded', () => Tracking.init());

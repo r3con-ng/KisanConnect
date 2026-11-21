@@ -112,11 +112,11 @@ const Session = {
   requireAuth(allowedRoles) {
     const user = this.get();
     if (!user) {
-      window.location.href = 'login.html';
+      window.KCNavigate('login');
       return null;
     }
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-      window.location.href = 'index.html';
+      window.KCNavigate('home');
       return null;
     }
     return user;
@@ -335,7 +335,26 @@ function renderMiniStars(rating) {
 }
 
 /* --- Init on DOM Ready --- */
-document.addEventListener('DOMContentLoaded', () => {
-  App.init();
-  Cart.updateBadge();
+window.KCNavigate = (destination) => {
+  const [page, query = ''] = destination.split('?');
+  if (window.__KC_REACT_RENDERER__) {
+    window.location.hash = `#/${page === 'home' ? '' : page}${query ? `?${query}` : ''}`;
+    return;
+  }
+  const legacyPages = { home: 'index.html', login: 'login.html', consumer: 'consumer.html', farmer: 'farmer.html', admin: 'admin.html', kyc: 'kyc.html', payment: 'payment.html', tracking: 'tracking.html' };
+  window.location.href = `${legacyPages[page] || 'index.html'}${query ? `?${query}` : ''}`;
+};
+
+Object.assign(window, {
+  App, Voice, Session, Cart, Toast, animateCounter, formatNumber, Icons,
+  CropSVGs, DeliverySVG, renderStars, renderInteractiveStars, setStarRating,
+  getStarRating, renderTrustBar, getFarmerById, getFarmerRating,
+  getFarmerReviews, renderMiniStars,
 });
+
+if (!window.__KC_REACT_RENDERER__) {
+  document.addEventListener('DOMContentLoaded', () => {
+    App.init();
+    Cart.updateBadge();
+  });
+}

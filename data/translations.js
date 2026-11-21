@@ -222,3 +222,5 @@ const TRANSLATIONS = {
   english: { en: "English", hi: "अंग्रेज़ी" },
   hindi: { en: "हिन्दी", hi: "हिन्दी" }
 };
+
+window.TRANSLATIONS = TRANSLATIONS;
