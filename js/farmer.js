@@ -8,9 +8,9 @@ const Farmer = {
     this.user = Session.requireAuth(['farmer']);
     if (!this.user) return;
 
-    const stored = localStorage.getItem('kc_farmer_crops');
-    if (stored) {
-      this.crops = JSON.parse(stored);
+    const stored = readStoredJSON('kc_farmer_crops', null);
+    if (Array.isArray(stored)) {
+      this.crops = stored;
     } else {
       this.crops = DEMO_CROPS.filter(c => c.farmerMobile === this.user.mobile);
       localStorage.setItem('kc_farmer_crops', JSON.stringify(this.crops));

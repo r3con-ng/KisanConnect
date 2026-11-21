@@ -10,8 +10,8 @@ const ConsumerApp = {
     this.user = Session.requireAuth(['consumer']);
     if (!this.user) return;
 
-    const stored = localStorage.getItem('kc_favorites');
-    this.favorites = stored ? JSON.parse(stored) : [];
+    const stored = readStoredJSON('kc_favorites', []);
+    this.favorites = Array.isArray(stored) ? stored : [];
 
     this.renderMarket();
     this.renderCart();

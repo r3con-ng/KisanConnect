@@ -10,8 +10,9 @@ const Tracking = {
     document.getElementById('trackingOrderId').textContent = orderId;
 
     // Load saved step
-    const saved = localStorage.getItem('kc_tracking_step');
-    if (saved) this.currentStep = parseInt(saved);
+    const storedStep = readStoredValue('kc_tracking_step');
+    const saved = storedStep === null ? NaN : Number(storedStep);
+    this.currentStep = Number.isInteger(saved) ? Math.max(0, Math.min(TRACKING_STEPS.length - 1, saved)) : 2;
 
     this.renderTimeline();
   },

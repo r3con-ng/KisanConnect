@@ -3,9 +3,23 @@
    Language switching, TTS, utilities
    ============================================ */
 
+function readStoredValue(key) {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+
+function readStoredJSON(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value === null ? fallback : JSON.parse(value);
+  } catch {
+    try { localStorage.removeItem(key); } catch { /* Storage may be unavailable. */ }
+    return fallback;
+  }
+}
+
 /* --- Language System --- */
 const App = {
-  lang: localStorage.getItem('kc_lang') || 'en',
+  lang: readStoredValue('kc_lang') || 'en',
 
   t(key) {
     if (typeof TRANSLATIONS !== 'undefined' && TRANSLATIONS[key]) {
@@ -97,8 +111,8 @@ const Session = {
   },
 
   get() {
-    const data = localStorage.getItem('kc_session');
-    return data ? JSON.parse(data) : null;
+    const user = readStoredJSON('kc_session', null);
+    return user && typeof user === 'object' && typeof user.role === 'string' ? user : null;
   },
 
   clear() {
@@ -126,8 +140,8 @@ const Session = {
 /* --- Cart Management --- */
 const Cart = {
   get() {
-    const data = localStorage.getItem('kc_cart');
-    return data ? JSON.parse(data) : [];
+    const cart = readStoredJSON('kc_cart', []);
+    return Array.isArray(cart) ? cart : [];
   },
 
   add(item) {
@@ -346,7 +360,7 @@ window.KCNavigate = (destination) => {
 };
 
 Object.assign(window, {
-  App, Voice, Session, Cart, Toast, animateCounter, formatNumber, Icons,
+  App, Voice, Session, Cart, Toast, animateCounter, formatNumber, Icons, readStoredValue, readStoredJSON,
   CropSVGs, DeliverySVG, renderStars, renderInteractiveStars, setStarRating,
   getStarRating, renderTrustBar, getFarmerById, getFarmerRating,
   getFarmerReviews, renderMiniStars,
