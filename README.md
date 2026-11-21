@@ -1,67 +1,122 @@
 # KisanConnect
 
-KisanConnect is a MERN marketplace prototype connecting farmers directly with consumers. The current app uses React, Vite, Express, Mongoose, and MongoDB. It is designed for local development and uses synthetic sample data.
+**A farmer-to-consumer marketplace prototype for discovering local produce and buying directly from growers.**
 
-## Requirements
+KisanConnect brings together a React frontend and an Express API backed by MongoDB. The demo includes consumer, farmer, and administrator workspaces, sample marketplace data, and English/Hindi interface text.
 
-- Node.js 18 or newer
-- Docker with Compose (recommended) or MongoDB running locally (`mongodb://127.0.0.1:27017/kisanconnect`)
+## Features
+
+- Browse and search produce listings by category and farmer.
+- View farmer profiles, favorites, ratings, and reviews.
+- Add produce from multiple farmers to a cart and place demo orders.
+- Track order status and view simulated payment history.
+- Manage listings and orders from a farmer dashboard.
+- Review sample farmer-verification applications, reviews, and disputes from an administrator dashboard.
+- Switch between English and Hindi.
+
+## Technology
+
+- **Frontend:** React, Vite, React Router
+- **API:** Node.js, Express
+- **Database:** MongoDB, Mongoose
+- **Authentication:** demo OTP flow with signed JWT sessions
+- **Deployment:** GitHub Pages frontend workflow and Render API Blueprint
 
 ## Run locally
 
-1. Copy `.env.example` to `.env` and update `JWT_SECRET` for your local environment.
-2. Start MongoDB with `docker compose up -d mongodb` (or start your local MongoDB service).
-3. Install dependencies with `npm install`.
-4. Add the sample marketplace data with `npm run seed`.
-5. Start the API and Vite frontend with `npm run dev`.
-6. Open `http://localhost:5173`.
+### Requirements
 
-The API listens on `http://localhost:5000`; Vite proxies `/api` requests to it. The health endpoint is `/api/health`.
+- Node.js 20 or newer and npm
+- Docker Compose, or a MongoDB instance
 
-## GitHub Pages
+### Setup
 
-GitHub Pages hosts only the static React frontend. The Express API and MongoDB must be deployed separately.
+```bash
+git clone https://github.com/r3con-ng/KisanConnect.git
+cd KisanConnect
+npm ci
+cp .env.example .env
+docker compose up -d mongodb
+```
 
-1. Deploy the API and MongoDB to a backend host, then confirm the API is reachable at `https://your-api-host/api/health`.
-2. In the GitHub repository, add the repository variable `VITE_API_BASE_URL` with the API origin only, for example `https://your-api-host` (no trailing slash and no `/api`). On the backend host, set `CLIENT_ORIGIN=https://r3con-ng.github.io` to allow the Pages site to call the API.
-3. In repository Settings → Pages, set the publishing source to **GitHub Actions**.
-4. Push the changes to `main` or run the **Deploy frontend to GitHub Pages** workflow manually.
+Set a private local value for `JWT_SECRET` in `.env`. The default MongoDB URI connects to the local database started by Docker Compose. If you use another MongoDB instance, update `MONGODB_URI` accordingly.
 
-The Pages build intentionally stops if `VITE_API_BASE_URL` is missing, so the published app cannot silently point its API requests back at the static Pages host. The app uses hash-based routes for Pages refresh and deep-link support.
+Load the synthetic demo records, then start the API and frontend:
 
-## Deploy the API
+```bash
+npm run seed
+npm run dev
+```
 
-The root `render.yaml` describes the Express API as a Render web service. For this prototype, pair it with a MongoDB Atlas Free cluster. Atlas Free clusters are intended for small development workloads and have reduced features and resources. Render Free web services sleep after 15 minutes without incoming traffic, so the first request after idle can take about a minute.
+Open the frontend at <http://localhost:5173>. The API listens at <http://localhost:5000>; Vite forwards `/api` requests to it. Check the database connection at <http://localhost:5000/api/health>.
 
-1. Create an Atlas Free cluster in AWS Singapore if Atlas marks it as Free; otherwise choose an Atlas Free region near your users. The Render service is set to Singapore to keep the app and database close for this India-based prototype.
-2. Create a database user with a strong password and a database named `kisanconnect`.
-3. Add the Render web service from this repository using the Blueprint (`render.yaml`). It generates `JWT_SECRET` and sets the Pages origin for CORS.
-4. In the Render service's Connect → Outbound panel, copy its outbound IP ranges. Add those ranges to the Atlas project's IP access list, then enter the Atlas connection string as Render's `MONGODB_URI`. Avoid `0.0.0.0/0`; Atlas warns that it allows connections from anywhere.
-5. Once the service is live, confirm its `/api/health` response reports `"database":"connected"`.
-6. Add the Render service origin to GitHub Actions repository variable `VITE_API_BASE_URL`, then enable GitHub Pages with GitHub Actions as the source.
-7. To load synthetic sample accounts and produce into Atlas, set your local `.env` `MONGODB_URI` to the Atlas connection string and run `npm run seed` once.
+The seed command only populates an empty database. If the database already contains users, it skips seeding.
+
+### Environment variables
+
+| Variable | Purpose | Example |
+| --- | --- | --- |
+| `MONGODB_URI` | MongoDB connection string | `mongodb://127.0.0.1:27017/kisanconnect` |
+| `JWT_SECRET` | Secret used to sign API sessions | Set a private random value |
+| `PORT` | API port; defaults to `5000` | `5000` |
+| `CLIENT_ORIGIN` | Comma-separated browser origins allowed by CORS | `http://localhost:5173` |
+
+Keep `.env` and production credentials out of version control. `.env.example` contains local development defaults only.
 
 ## Demo accounts
 
-Sign in with any listed mobile number and OTP `123456`.
+Use OTP `123456` with the sample mobile numbers below:
 
 | Role | Mobile |
 | --- | --- |
-| Farmer | `9876543210` |
 | Consumer | `9999999999` |
-| Admin | `8888888888` |
+| Farmer | `9876543210` |
+| Administrator | `8888888888` |
 
-Other valid 10-digit numbers become consumer demo accounts.
+The seed data includes additional farmer accounts. Any other valid 10-digit number creates a consumer demo account.
 
-## Included workflows
+## API
 
-- Consumer marketplace search and category filters, farmer profiles, favorites, cart, multi-farmer checkout, order tracking, reviews, and payment history
-- Farmer dashboard, produce listings, order status management, earnings, and sample KYC submission
-- Admin statistics, farmer verification decisions, order status review, review moderation, and dispute management
-- English/Hindi UI toggle and browser voice guidance
+All API routes use the `/api` prefix. The health endpoint reports API and database status:
 
-## Demo limitations
+```http
+GET /api/health
+```
 
-OTP `123456`, payment outcomes, KYC, document checklists, government price ranges, demand insights, and all seeded user and marketplace data are simulations. No SMS, payment gateway, government database, or document storage is connected. Use only synthetic identity values; never submit real Aadhaar numbers or documents. The “verified” state is an application review state in this prototype, not government verification.
+The API also provides demo login, product and farmer listings, favorites, checkout, order tracking, reviews, farmer verification, and administrator review tools.
 
-The original standalone HTML pages and scripts are retained as reference material. The active application is the React app under `src/`, with its API and models under `server/`.
+## Deployment
+
+### API and database
+
+The root [`render.yaml`](render.yaml) defines a Render web service. Create a MongoDB Atlas cluster and a database user with read/write access to the `kisanconnect` database, then create the Render Blueprint from this repository.
+
+Provide the Atlas connection string as the Render `MONGODB_URI` environment value. Configure the Atlas IP access list with the outbound IP ranges shown for the Render service. Avoid opening database access to all IP addresses. The Blueprint generates `JWT_SECRET` and sets `CLIENT_ORIGIN` for the GitHub Pages site.
+
+After deployment, check `https://<api-host>/api/health`. A healthy response includes `"database":"connected"`.
+
+### Frontend on GitHub Pages
+
+The [Pages workflow](.github/workflows/pages.yml) builds the React frontend and deploys it to GitHub Pages.
+
+1. In repository **Settings → Pages**, set the publishing source to **GitHub Actions**.
+2. Under **Settings → Secrets and variables → Actions → Variables**, add `VITE_API_BASE_URL` with the API origin, such as `https://your-api-host`. Use the origin only—do not add a trailing slash or `/api`.
+3. Push to `main`, or run **Deploy frontend to GitHub Pages** from the Actions tab.
+
+The build uses the repository path for GitHub Pages and requires `VITE_API_BASE_URL` to be set. The frontend uses hash-based routing so in-app routes work when hosted under a repository path.
+
+## Prototype scope
+
+Authentication uses a fixed demo OTP and does not send SMS. Payments are simulated. Farmer verification stores sample form fields and checklist status; it does not verify identities or store documents. Seeded profiles and marketplace activity are synthetic.
+
+This project is for demonstration and development, not production use. Do not enter real identity, payment, or personal information. A production deployment needs real authentication, payment processing, verification, rate limiting, and operational safeguards.
+
+## Project structure
+
+```text
+src/                    React application
+server/                 Express API, Mongoose models, and demo seed script
+.github/workflows/       GitHub Pages deployment workflow
+render.yaml              Render API service definition
+docker-compose.yml       Local MongoDB service
+```
